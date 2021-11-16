@@ -29,6 +29,7 @@ app.use(express.urlencoded({
 // Routes
 app.use("/api/v1/cuisines", require("./routes/cuisine.route"));
 app.use("/api/v1/restaurants", require("./routes/restaurant.route"));
+app.use("/api/v1/users", require("./routes/user.route"));
 
 app.listen(PORT, () => {
     console.log(
