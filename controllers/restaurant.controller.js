@@ -1,4 +1,3 @@
-const mongoose = require("mongoose");
 const Restaurant = require("../models/restaurant.model").Restaurant;
 const Joi = require('joi');
 
@@ -33,23 +32,7 @@ exports.getAll = async (req, res) => {
 
 exports.get = async (req, res) => {
   try {
-    const restaurant = await Restaurant.aggregate([
-      { $match: { _id: mongoose.Types.ObjectId(req.params.id)} },
-      { $project: { name: 1, cuisines: 1 } },
-      {
-        $lookup: {
-          from: 'Cuisine',
-          localField: 'cuisines',
-          foreignField: '_id',
-          as: 'cuisinesData'
-        }
-      },
-      {
-        $project: { 'cuisinesData.__v': 0, 'cuisines': 0 }
-      }
-    ])
-
-    console.log(restaurant)
+    const restaurant = await Restaurant.find({ _id: req.params.id }).populate(['cuisines']);
 
     if (restaurant.length == 0) {
       res.status(404).json({

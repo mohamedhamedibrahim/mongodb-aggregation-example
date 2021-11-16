@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const User = require("../models/user.model").User;
 const Joi = require('joi');
 
@@ -6,6 +7,55 @@ const schema = Joi.object({
   cuisines: Joi.required(),
   restaurants: Joi.required(),
 });
+
+exports.searchByCuisineId = async (req, res) => {
+  try {
+    const usersAggregatedByCuisineId = await User.aggregate([
+      { $project: { name: 1, cuisines: 1, restaurants: 1 } },
+      {
+        $lookup: {
+          from: 'Restaurant',
+          localField: 'restaurants',
+          foreignField: '_id',
+          as: 'restaurantsData'
+        }
+      },
+      {
+        $match: {
+          $or: [
+            {
+              'cuisines': mongoose.Types.ObjectId(req.params.cuisineId),
+            },
+            {
+              'restaurantsData.cuisines': mongoose.Types.ObjectId(req.params.cuisineId),
+            },
+          ]
+        }
+      },
+      {
+        $lookup: {
+          from: 'Cuisine',
+          localField: 'cuisines',
+          foreignField: '_id',
+          as: 'cuisinesData'
+        }
+      },
+      {
+        $project: {
+          'cuisinesData.__v': 0,
+          'cuisines': 0,
+          'restaurantsData.__v': 0,
+          'restaurants': 0
+        }
+      }
+    ])
+
+    res.status(200).json({ success: true, data: usersAggregatedByCuisineId });
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ success: false, error: error });
+  }
+};
 
 exports.getAll = async (req, res) => {
   try {
@@ -28,7 +78,7 @@ exports.getAll = async (req, res) => {
         }
       },
       {
-        $project: { 
+        $project: {
           'cuisinesData.__v': 0,
           'cuisines': 0,
           'restaurantsData.__v': 0,
