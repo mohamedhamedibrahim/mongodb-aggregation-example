@@ -3,34 +3,26 @@ const Joi = require('joi');
 
 const schema = Joi.object({
   name: Joi.string().min(2).max(50).required(),
-  cuisineId: Joi.required()
+  cuisines: Joi.required()
 });
 
 exports.getAll = async (req, res) => {
   try {
-
     const aggregate = await Restaurant.aggregate([
-      { $project: { name: 1, cuisineId: 1 } },
+      { $project: { name: 1, cuisines: 1 } },
       {
         $lookup: {
           from: 'Cuisine',
-          localField: 'cuisineId',
+          localField: 'cuisines',
           foreignField: '_id',
-          as: 'cuisineData'
+          as: 'cuisinesData'
         }
       },
       {
-        $unwind: {
-          path: '$cuisineData',
-          preserveNullAndEmptyArrays: true
-        }
-      },
-      {
-        $project: { 'cuisineData.__v': 0 }
+        $project: { 'cuisinesData.__v': 0, 'cuisines': 0 }
       }
     ])
 
-    // let data = await Restaurant.find({})
     res.status(200).json({ success: true, data: aggregate });
   } catch (error) {
     console.log(error)
@@ -60,7 +52,7 @@ exports.create = async (req, res) => {
   try {
     let input = {
       name: req.body.name,
-      cuisineId: req.body.cuisineId,
+      cuisines: req.body.cuisines,
     }
 
     const { error, value } = await schema.validateAsync(input);

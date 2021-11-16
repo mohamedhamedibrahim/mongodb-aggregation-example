@@ -9,7 +9,9 @@ const RestaurantSchema = new Schema(
             minlength: 2,
             maxlength: 50
         },
-        cuisineId: { type: Schema.Types.ObjectId, ref: 'Cuisine' }
+        cuisines: [
+            { type: Schema.Types.ObjectId, ref: 'Cuisine' }
+        ]
     },
     { timestamps: true }
 );
