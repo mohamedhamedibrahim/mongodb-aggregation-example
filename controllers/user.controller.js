@@ -11,7 +11,7 @@ const schema = Joi.object({
 exports.searchByCuisineId = async (req, res) => {
   try {
     const usersAggregatedByCuisineId = await User.aggregate([
-      { $project: { name: 1, cuisines: 1, restaurants: 1 } },
+      { $project: { _id: 1, name: 1, cuisines: 1, restaurants: 1 } },
       {
         $lookup: {
           from: 'Restaurant',
